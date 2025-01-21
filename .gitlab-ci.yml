@@ -1,0 +1,89 @@
+# usermod -aG docker gitlab-runner
+
+stages:
+  - build
+  - deploy
+
+variables:
+  PROJECT_NAME: duanju/creator-app
+  REGISTRY_URL: registry.yizhiwechat.com
+
+cache:
+  key: nodemodules-$CI_COMMIT_REF_NAME
+  paths:
+    - node_modules/
+build_h5_develop:
+  stage: build
+  cache:
+    key: nodemodules-$CI_COMMIT_REF_NAME
+    paths:
+      - node_modules/
+  script:
+    - rm -rf ./apps/creator-h5/dist/build/h5/
+    - pnpm install
+    - pnpm install pinia@2.0.30 -w
+    - pnpm run --filter=creator-h5 build:h5-develop
+    - rm -rf /opt/yitui-dev/web/creator-app/dist/
+    - cp -rf ./apps/creator-h5/dist/build/h5/ /opt/yitui-dev/web/creator-app/dist/
+  only:
+    refs:
+      - develop
+    changes:
+      - 'apps/creator-h5/**/*'
+      - 'packages/**/*'
+  tags:
+    - yitui-runner-dev
+
+build_h5_pre_release:
+  stage: build
+  cache:
+    key: nodemodules-$CI_COMMIT_REF_NAME
+    paths:
+      - node_modules/
+  script:
+    - rm -rf ./apps/creator-h5/dist/build/h5/
+    - pnpm install pinia@2.0.30 -w
+    - pnpm run --filter=creator-h5 build:h5-prerelease
+    - docker build . -t $PROJECT_NAME
+    - docker tag $PROJECT_NAME $REGISTRY_URL/$PROJECT_NAME:$CI_COMMIT_REF_NAME
+    - docker push $REGISTRY_URL/$PROJECT_NAME:$CI_COMMIT_REF_NAME
+  only:
+    - pre-release
+  tags:
+    - yitui-runner-prod
+build_master:
+  stage: build
+  cache:
+    key: nodemodules-$CI_COMMIT_REF_NAME
+    paths:
+      - node_modules/
+  script:
+    - node -v
+    - rm -rf ./apps/creator-h5/dist/build/h5/
+    - rm -rf ./apps/creator-h5/node_modules/
+    - pnpm install
+    - pnpm install pinia@2.0.30 -w
+    - pnpm run --filter=creator-h5 build
+    - docker build . -t $PROJECT_NAME
+    - docker tag $PROJECT_NAME $REGISTRY_URL/$PROJECT_NAME:latest
+    - docker push $REGISTRY_URL/$PROJECT_NAME:latest
+  only:
+    - master
+  tags:
+    - yitui-runner-prod
+# deploy_pre_release:
+#   stage: deploy
+#   script:
+#     - curl https://cs.console.aliyun.com/hook/trigger?token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbHVzdGVySWQiOiJjNDM3YzAxNGZhOTZiNGQ3YThmYmRjYjZjNDYwZmE1MTciLCJpZCI6IjIxODMxNiJ9.Ua2WQRmtKWx27qiKLMbAhWY_XfcLBv1RjhaAm9J1sXOKanYlk95DmPqvKAeqZLTdVHtb8XDgXvK9LvrR7teAnI95zBRTyPyPVwpcEIwem7ZoFjIwu5NFnveKCy1niAioOPdQMCUy3SKcKr8qODe_aDC-DTI158PQ5JzlJ9VBrAk
+#   only:
+#     - pre-release
+#   tags:
+#     - yitui-runner-prod
+deploy_master:
+  stage: deploy
+  script:
+    - curl https://cs.console.aliyun.com/hook/trigger?token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbHVzdGVySWQiOiJjZDljMDM3ODM3N2RlNDcxYTg3ZTMwZjUyNTgyODA4NGQiLCJpZCI6IjIzMjAzMCJ9.St2XpkfZrCz5eu2lxnd38R0Ud8cPFHDCexrbPp2WzqXA6pEXvrNGHbg5oaVnyQXjH6DiPH77YeJnPYyMCAP44Nkd3WYw3-O_kD4KzqvNtZgodMyAPkXA1ZrbfM5V2E2RMRMqVMkbad0DLcDCc-Ksi7BvGWXavzAx3KpNnRM4iEQ
+  only:
+    - master
+  tags:
+    - yitui-runner-prod

@@ -1,0 +1,5 @@
+{
+    "i18n-ally.localesPaths": [
+        "packages/common/components/uni-calendar/i18n"
+    ]
+}

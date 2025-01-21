@@ -1,0 +1,52 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index"
+    },
+    {
+      "path": "pages/mine/mine"
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarBackgroundColor": "#F2F2F2",
+    "backgroundColor": "#ffffff",
+    "navigationBarTitleText": "",
+    "navigationStyle": "default",
+    "transparentTitle": "always"
+  },
+  "tabBar": {
+    "color": "#D0D3E5",
+    "selectedColor": "#FE2C55",
+    "backgroundColor": "#FFF",
+    "borderStyle": "#FFF",
+    "iconWidth": "24px",
+    "spacing": "0px",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/tab/bxs-home.png",
+        "selectedIconPath": "static/tab/bxs-home-1.png"
+      },
+      
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "个人中心",
+        "iconPath": "static/tab/bxs-user-circle.png",
+        "selectedIconPath": "static/tab/bxs-user-circle-1.png"
+      }
+    ]
+  },
+  "easycom": {
+    "autoscan": false,
+    "custom": {
+      "button-service": "kt-page/components/button-service.vue",
+      "^kt-(.*)": "/@/components/kt-$1/kt-$1.vue"
+    }
+  },
+  "condition": {
+    "current": -1,
+    "list": []
+  }
+}
